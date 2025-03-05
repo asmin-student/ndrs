@@ -1,6 +1,3 @@
-"use client"
-
-import { useState } from "react"
 import { Metadata } from "next"
 import { AlertTriangle, Info, MapPin } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,8 +13,6 @@ export const metadata: Metadata = {
 }
 
 export default function AlertsPage() {
-  const [selectedAlert, setSelectedAlert] = useState<string | null>(null)
-  
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -48,7 +43,7 @@ export default function AlertsPage() {
             </CardHeader>
             <CardContent>
               <div className="h-[500px] w-full rounded-md border overflow-hidden">
-                <DisasterMap selectedAlert={selectedAlert} />
+                <DisasterMap />
               </div>
             </CardContent>
           </Card>
@@ -69,8 +64,6 @@ export default function AlertsPage() {
                 severity="Critical"
                 date="2023-09-15"
                 description="Heavy rainfall has caused severe flooding in Bardiya District. Multiple villages affected with reports of infrastructure damage."
-                onSelect={() => setSelectedAlert("alert-001")}
-                isSelected={selectedAlert === "alert-001"}
               />
               <AlertCard
                 id="alert-002"
@@ -79,8 +72,6 @@ export default function AlertsPage() {
                 severity="High"
                 date="2023-09-14"
                 description="Continuous rainfall has increased the risk of landslides in Sindhupalchok area. Residents advised to be vigilant and prepare for possible evacuation."
-                onSelect={() => setSelectedAlert("alert-002")}
-                isSelected={selectedAlert === "alert-002"}
               />
               <AlertCard
                 id="alert-003"
@@ -89,8 +80,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-10"
                 description="Persistent drought conditions affecting agricultural activities in Kailali. Water conservation measures recommended."
-                onSelect={() => setSelectedAlert("alert-003")}
-                isSelected={selectedAlert === "alert-003"}
               />
             </TabsContent>
             <TabsContent value="warnings" className="mt-4 space-y-4">
@@ -101,8 +90,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-13"
                 description="Increased risk of avalanches in higher elevations of Solukhumbu. Trekkers and climbers advised to exercise caution."
-                onSelect={() => setSelectedAlert("alert-004")}
-                isSelected={selectedAlert === "alert-004"}
               />
               <AlertCard
                 id="alert-005"
@@ -111,8 +98,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-12"
                 description="Meteorological forecast predicts heavy rainfall in Eastern Nepal over the next 48 hours. Flash flood risk in low-lying areas."
-                onSelect={() => setSelectedAlert("alert-005")}
-                isSelected={selectedAlert === "alert-005"}
               />
             </TabsContent>
             <TabsContent value="all" className="mt-4 space-y-4">
@@ -123,8 +108,6 @@ export default function AlertsPage() {
                 severity="Critical"
                 date="2023-09-15"
                 description="Heavy rainfall has caused severe flooding in Bardiya District. Multiple villages affected with reports of infrastructure damage."
-                onSelect={() => setSelectedAlert("alert-001")}
-                isSelected={selectedAlert === "alert-001"}
               />
               <AlertCard
                 id="alert-002"
@@ -133,8 +116,6 @@ export default function AlertsPage() {
                 severity="High"
                 date="2023-09-14"
                 description="Continuous rainfall has increased the risk of landslides in Sindhupalchok area. Residents advised to be vigilant and prepare for possible evacuation."
-                onSelect={() => setSelectedAlert("alert-002")}
-                isSelected={selectedAlert === "alert-002"}
               />
               <AlertCard
                 id="alert-004"
@@ -143,8 +124,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-13"
                 description="Increased risk of avalanches in higher elevations of Solukhumbu. Trekkers and climbers advised to exercise caution."
-                onSelect={() => setSelectedAlert("alert-004")}
-                isSelected={selectedAlert === "alert-004"}
               />
               <AlertCard
                 id="alert-005"
@@ -153,8 +132,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-12"
                 description="Meteorological forecast predicts heavy rainfall in Eastern Nepal over the next 48 hours. Flash flood risk in low-lying areas."
-                onSelect={() => setSelectedAlert("alert-005")}
-                isSelected={selectedAlert === "alert-005"}
               />
               <AlertCard
                 id="alert-003"
@@ -163,8 +140,6 @@ export default function AlertsPage() {
                 severity="Medium"
                 date="2023-09-10"
                 description="Persistent drought conditions affecting agricultural activities in Kailali. Water conservation measures recommended."
-                onSelect={() => setSelectedAlert("alert-003")}
-                isSelected={selectedAlert === "alert-003"}
               />
             </TabsContent>
           </Tabs>
@@ -229,8 +204,6 @@ interface AlertCardProps {
   severity: "Low" | "Medium" | "High" | "Critical"
   date: string
   description: string
-  onSelect: () => void
-  isSelected: boolean
 }
 
 function AlertCard({ 
@@ -239,12 +212,10 @@ function AlertCard({
   location, 
   severity, 
   date, 
-  description,
-  onSelect,
-  isSelected
+  description
 }: AlertCardProps) {
   return (
-    <Card className={`cursor-pointer transition-all ${isSelected ? 'ring-2 ring-primary' : ''}`} onClick={onSelect}>
+    <Card>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-base">{title}</CardTitle>
