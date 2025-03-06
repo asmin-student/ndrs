@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
 import { 
   AlertCircle, 
   Home, 
@@ -42,17 +43,16 @@ const navItems = [
 ]
 
 const themes = [
-  { name: "White", value: "light" },
-  { name: "Black", value: "dark" },
-  { name: "Outer Space", value: "system" },
-  { name: "Japanese Indigo", value: "indigo" },
+  { name: "Light", value: "light" },
+  { name: "Dark", value: "dark" },
+  { name: "System", value: "system" }
 ]
 
 export default function Navbar() {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [activeTheme, setActiveTheme] = useState("light")
+  const { theme, setTheme } = useTheme()
   
   return (
     <>
@@ -124,17 +124,16 @@ export default function Navbar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="right">
-            {themes.map((theme) => (
+            {themes.map((t) => (
               <DropdownMenuItem
-                key={theme.value}
-                onClick={() => setActiveTheme(theme.value)}
+                key={t.value}
+                onClick={() => setTheme(t.value)}
                 className={cn(
                   "flex items-center gap-2",
-                  activeTheme === theme.value && "bg-accent"
+                  theme === t.value && "bg-accent"
                 )}
               >
-                <div className={`h-4 w-4 rounded-full bg-${theme.value}`} />
-                {theme.name}
+                {t.name}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -182,44 +181,15 @@ export default function Navbar() {
 
       {/* Mobile Header */}
       <header className="lg:hidden sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
-          <Link href="/" className="mr-4">
-            <Shield className="h-6 w-6" />
-          </Link>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                {isLoggedIn ? (
-                  <div className="h-8 w-8 rounded-full bg-primary" />
-                ) : (
-                  <Lock className="h-5 w-5" />
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              {/* Same content as desktop dropdown */}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="ml-auto">
-                <Palette className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {/* Same content as desktop dropdown */}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+        <div className="container flex h-14 items-center gap-4">
+          {/* Menu Button */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="ml-2">
+              <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-96">
+            <SheetContent side="left" className="w-full sm:w-96">
               <SheetHeader>
                 <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
@@ -250,6 +220,83 @@ export default function Navbar() {
               </div>
             </SheetContent>
           </Sheet>
+
+          <Link href="/" className="flex items-center gap-2">
+            <Shield className="h-6 w-6" />
+            <span className="font-semibold">Nepal DRS</span>
+          </Link>
+
+          <div className="flex items-center gap-2 ml-auto">
+            {/* Theme Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Palette className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {themes.map((t) => (
+                  <DropdownMenuItem
+                    key={t.value}
+                    onClick={() => setTheme(t.value)}
+                    className={cn(
+                      "flex items-center gap-2",
+                      theme === t.value && "bg-accent"
+                    )}
+                  >
+                    {t.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Account Button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  {isLoggedIn ? (
+                    <div className="h-8 w-8 rounded-full bg-primary" />
+                  ) : (
+                    <Lock className="h-5 w-5" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                {isLoggedIn ? (
+                  <>
+                    <DropdownMenuItem>
+                      <Link href="/messages" className="flex items-center">Messages</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/reports" className="flex items-center">My Reports</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/resources" className="flex items-center">My Resources</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link href="/deployments" className="flex items-center">My Deployments</Link>
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <div className="p-4 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Username</label>
+                      <Input type="text" placeholder="Enter username" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Password</label>
+                      <Input type="password" placeholder="Enter password" />
+                    </div>
+                    <Button className="w-full">Sign In</Button>
+                    <div className="flex justify-between text-sm">
+                      <Button variant="link" size="sm">Forgot Password?</Button>
+                      <Button variant="link" size="sm">Register</Button>
+                    </div>
+                  </div>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </header>
     </>
