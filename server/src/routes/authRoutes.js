@@ -4,13 +4,27 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { AppError } = require('../utils/errorHandler');
+const validate = require('../middleware/validate');
+const Joi = require('joi');
 
-// Register new user
-router.post('/register', async (req, res, next) => {
+const registerSchema = Joi.object({
+  name: Joi.string().required().min(2),
+  email: Joi.string().required().email(),
+  password: Joi.string().required().min(6),
+  role: Joi.string().valid('admin', 'district_officer', 'emergency_responder', 'resource_manager', 'field_officer', 'volunteer', 'ngo_representative', 'public_user'),
+  organization: Joi.string().allow(''),
+  phone: Joi.string().allow(''),
+  district: Joi.string().required()
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().required().email(),
+  password: Joi.string().required()
+});
+
+router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
     const { name, email, password, role, organization, phone, district } = req.body;
-
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -23,10 +37,17 @@ router.post('/register', async (req, res, next) => {
       district
     });
 
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
     res.status(201).json({
       status: 'success',
       data: {
-        user
+        user,
+        token
       }
     });
   } catch (error) {
@@ -34,24 +55,15 @@ router.post('/register', async (req, res, next) => {
   }
 });
 
-// Login user
-router.post('/login', async (req, res, next) => {
+router.post('/login', validate(loginSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Check if user exists
     const user = await User.findByEmail(email);
-    if (!user) {
+    
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new AppError('Invalid email or password', 401);
     }
 
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new AppError('Invalid email or password', 401);
-    }
-
-    // Generate JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -61,13 +73,15 @@ router.post('/login', async (req, res, next) => {
     res.json({
       status: 'success',
       data: {
-        token,
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
-        }
+          role: user.role,
+          organization: user.organization,
+          district: user.district
+        },
+        token
       }
     });
   } catch (error) {

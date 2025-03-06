@@ -1,9 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const Incident = require('../models/Incident');
+const { auth, authorize } = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const Joi = require('joi');
 
-// Get all incidents
-router.get('/', async (req, res, next) => {
+const incidentSchema = Joi.object({
+  title: Joi.string().required().min(5),
+  type: Joi.string().required().valid('flood', 'earthquake', 'landslide', 'fire', 'drought', 'avalanche', 'other'),
+  location: Joi.string().required(),
+  severity: Joi.string().required().valid('low', 'medium', 'high', 'critical'),
+  description: Joi.string().required().min(10),
+  affected_people: Joi.number().integer().min(0),
+  status: Joi.string().valid('active', 'resolved')
+});
+
+router.get('/', auth, async (req, res, next) => {
   try {
     const incidents = await Incident.findAll(req.query);
     res.json({
@@ -17,8 +29,7 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// Get single incident
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', auth, async (req, res, next) => {
   try {
     const incident = await Incident.findById(req.params.id);
     if (!incident) {
@@ -38,10 +49,12 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// Create new incident
-router.post('/', async (req, res, next) => {
+router.post('/', [auth, validate(incidentSchema)], async (req, res, next) => {
   try {
-    const incident = await Incident.create(req.body);
+    const incident = await Incident.create({
+      ...req.body,
+      reported_by: req.user.id
+    });
     res.status(201).json({
       status: 'success',
       data: {
@@ -53,8 +66,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-// Update incident
-router.patch('/:id', async (req, res, next) => {
+router.patch('/:id', [auth, validate(incidentSchema)], async (req, res, next) => {
   try {
     const incident = await Incident.update(req.params.id, req.body);
     if (!incident) {
