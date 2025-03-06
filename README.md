@@ -3,7 +3,7 @@
 ## Full Project Structure
 
 DisasterManagementApp
-├── Backend
+├── Server
 │ ├── .env
 │ ├── .gitignore
 │ ├── package.json
@@ -43,7 +43,7 @@ DisasterManagementApp
 │ │ ├── resource.test.js # Resource management tests
 │ │ └── response.test.js # Response management tests
 |
-├─ Frontend
+├─ Client
 ├── .eslintrc.json
 ├── .gitignore
 ├── base.tldr
