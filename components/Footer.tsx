@@ -1,4 +1,5 @@
 import { Shield } from "lucide-react"
+import Link from "next/link"
 
 export default function Footer() {
   return (
@@ -9,18 +10,18 @@ export default function Footer() {
           <span className="font-semibold">Nepal Disaster Response System</span>
         </div>
         <div className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Nepal DRS. All rights reserved.
+          © {new Date().getFullYear()} Government of Nepal. All rights reserved.
         </div>
         <div className="flex items-center gap-4">
-          <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
+          <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
             Privacy Policy
-          </a>
-          <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
+          </Link>
+          <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
             Terms of Service
-          </a>
-          <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
+          </Link>
+          <Link href="/contact" className="text-sm text-muted-foreground hover:text-foreground">
             Contact
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

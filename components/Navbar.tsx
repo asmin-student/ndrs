@@ -15,7 +15,9 @@ import {
   Search,
   Lock,
   User,
-  Palette
+  Palette,
+  LogIn,
+  UserPlus
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -51,7 +53,7 @@ const themes = [
 export default function Navbar() {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false) // This would come from auth context in real app
   const { theme, setTheme } = useTheme()
   
   return (
@@ -83,35 +85,32 @@ export default function Navbar() {
           <DropdownMenuContent align="start" side="right" className="w-64">
             {isLoggedIn ? (
               <>
-                <DropdownMenuItem>
-                  <Link href="/messages" className="flex items-center">Messages</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/reports" className="flex items-center">My Reports</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/resources" className="flex items-center">My Resources</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Link href="/deployments" className="flex items-center">My Deployments</Link>
+                <Link href="/profile">
+                  <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </DropdownMenuItem>
+                </Link>
+                <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Logout
                 </DropdownMenuItem>
               </>
             ) : (
-              <div className="p-4 space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Username</label>
-                  <Input type="text" placeholder="Enter username" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Password</label>
-                  <Input type="password" placeholder="Enter password" />
-                </div>
-                <Button className="w-full">Sign In</Button>
-                <div className="flex justify-between text-sm">
-                  <Button variant="link" size="sm">Forgot Password?</Button>
-                  <Button variant="link" size="sm">Register</Button>
-                </div>
-              </div>
+              <>
+                <Link href="/login">
+                  <DropdownMenuItem>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </DropdownMenuItem>
+                </Link>
+                <Link href="/register">
+                  <DropdownMenuItem>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Register
+                  </DropdownMenuItem>
+                </Link>
+              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -264,35 +263,32 @@ export default function Navbar() {
               <DropdownMenuContent align="end" className="w-64">
                 {isLoggedIn ? (
                   <>
-                    <DropdownMenuItem>
-                      <Link href="/messages" className="flex items-center">Messages</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link href="/reports" className="flex items-center">My Reports</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link href="/resources" className="flex items-center">My Resources</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link href="/deployments" className="flex items-center">My Deployments</Link>
+                    <Link href="/profile">
+                      <DropdownMenuItem>
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Logout
                     </DropdownMenuItem>
                   </>
                 ) : (
-                  <div className="p-4 space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Username</label>
-                      <Input type="text" placeholder="Enter username" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Password</label>
-                      <Input type="password" placeholder="Enter password" />
-                    </div>
-                    <Button className="w-full">Sign In</Button>
-                    <div className="flex justify-between text-sm">
-                      <Button variant="link" size="sm">Forgot Password?</Button>
-                      <Button variant="link" size="sm">Register</Button>
-                    </div>
-                  </div>
+                  <>
+                    <Link href="/login">
+                      <DropdownMenuItem>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/register">
+                      <DropdownMenuItem>
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Register
+                      </DropdownMenuItem>
+                    </Link>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
