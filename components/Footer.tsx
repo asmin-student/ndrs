@@ -2,8 +2,8 @@ import { Shield } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="w-full border-t bg-background">
-      <div className="container flex flex-col md:flex-row items-center justify-between py-6 gap-4">
+    <footer className="mt-8">
+      <div className="container flex flex-col md:flex-row items-center justify-between py-4 gap-4">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5" />
           <span className="font-semibold">Nepal Disaster Response System</span>
