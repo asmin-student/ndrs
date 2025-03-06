@@ -119,7 +119,7 @@ export default function DisasterMap({ selectedAlert }: DisasterMapProps) {
   }, [selectedAlert])
   
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full relative z-10">
       <MapContainer
         center={NEPAL_CENTER}
         zoom={DEFAULT_ZOOM}

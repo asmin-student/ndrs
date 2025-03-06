@@ -57,7 +57,7 @@ export default function Navbar() {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[72px] border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <aside className="hidden lg:flex flex-col w-[72px] border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         {/* Logo */}
         <Link 
           href="/"

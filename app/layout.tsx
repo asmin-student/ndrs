@@ -29,9 +29,9 @@ export default function RootLayout({
           {/* Div A: Outer container */}
           <div className="min-h-screen bg-background/90 p-4 md:p-6 lg:p-8">
             {/* Div B: Inner container */}
-            <div className="relative min-h-[calc(100vh-4rem)] bg-background rounded-xl shadow-lg flex">
+            <div className="relative min-h-[calc(100vh-4rem)] bg-background rounded-xl shadow-lg flex flex-col lg:flex-row">
               <Navbar />
-              <main className="flex-1 overflow-hidden">
+              <main className="flex-1 overflow-hidden relative">
                 <div className="container h-full py-6 px-4 md:px-6">
                   {children}
                 </div>
