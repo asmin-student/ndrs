@@ -13,19 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// TODO: Add authentication check
-// import { useAuth } from "@/hooks/use-auth"
-// if (!isAuthenticated) {
-//   router.push("/login")
-//   return null
-// }
+const MAX_FILE_SIZE = 5000000; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const profileSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
   }),
   phone: z.string().min(10, {
     message: "Please enter a valid phone number.",
@@ -36,6 +29,14 @@ const profileSchema = z.object({
   district: z.string().min(2, {
     message: "Please enter your district.",
   }),
+  avatar: z
+    .any()
+    .refine((files) => files?.length == 0 || files?.[0]?.size <= MAX_FILE_SIZE, 'Max file size is 5MB.')
+    .refine(
+      (files) => files?.length == 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      'Only .jpg, .jpeg, .png and .webp formats are supported.'
+    )
+    .optional()
 })
 
 const passwordSchema = z.object({
@@ -48,12 +49,12 @@ const passwordSchema = z.object({
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
   message: "Passwords do not match",
-  path: ["confirmPassword"],
-})
+  path: ["confirmPassword"], })
 
 export default function ProfilePage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   // Mock user data - In real app, this would come from auth context/API
   const user = {
@@ -88,7 +89,6 @@ export default function ProfilePage() {
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: user.name,
-      email: user.email,
       phone: user.phone,
       organization: user.organization,
       district: user.district,
@@ -103,6 +103,33 @@ export default function ProfilePage() {
       confirmPassword: "",
     },
   })
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        })
+        return
+      }
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        toast({
+          title: "Error",
+          description: "Only .jpg, .jpeg, .png and .webp formats are supported",
+          variant: "destructive",
+        })
+        return
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   function onProfileSubmit(values: z.infer<typeof profileSchema>) {
     setIsLoading(true)
@@ -156,7 +183,7 @@ export default function ProfilePage() {
           <CardContent>
             <div className="flex flex-col items-center space-y-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={user.avatar} />
+                <AvatarImage src={avatarPreview || user.avatar} />
                 <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
               </Avatar>
               <div className="text-center">
@@ -209,6 +236,37 @@ export default function ProfilePage() {
                 <CardContent>
                   <Form {...profileForm}>
                     <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                      <FormField
+                        control={profileForm.control}
+                        name="avatar"
+                        render={({ field: { value, onChange, ...field } }) => (
+                          <FormItem>
+                            <FormLabel>Profile Picture</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20">
+                                  <AvatarImage src={avatarPreview || user.avatar} />
+                                  <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                                </Avatar>
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    handleAvatarChange(e)
+                                    onChange(e.target.files)
+                                  }}
+                                  {...field}
+                                />
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Upload a profile picture (max 5MB, .jpg, .png, or .webp)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={profileForm.control}
@@ -216,20 +274,6 @@ export default function ProfilePage() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Full Name</FormLabel>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={profileForm.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email</FormLabel>
                               <FormControl>
                                 <Input {...field} />
                               </FormControl>
@@ -345,7 +389,7 @@ export default function ProfilePage() {
 
                       <Button type="submit" disabled={isLoading}>
                         {isLoading ? "Updating..." : "Update Password"}
-                 </Button>
+                      </Button>
                     </form>
                   </Form>
                 </CardContent>
@@ -365,7 +409,7 @@ export default function ProfilePage() {
                     {user.recentActivity.map((activity, index) => (
                       <div key={index} className="flex items-start gap-4 pb-4 border-b last:border-0">
                         <div className="rounded-full bg-primary/10 p-2">
-                          <BadgeCheck className="h-4 w-4 text-primary" />
+                          <BadgeCheck className="h-3.5 w-3.5 text-primary" />
                         </div>
                         <div>
                           <h4 className="text-sm font-medium">{activity.type}</h4>

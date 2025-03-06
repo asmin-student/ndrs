@@ -13,6 +13,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
+const MAX_FILE_SIZE = 5000000; // 5MB
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -28,21 +32,36 @@ const formSchema = z.object({
   role: z.string({
     required_error: "Please select a role.",
   }),
-  organization: z.string().min(2, {
-    message: "Organization name must be at least 2 characters.",
-  }),
+  organization: z.string().optional(),
   phone: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),
   employeeId: z.string().optional(),
-  department: z.string().optional(),
+  citizenshipNumber: z.string().optional(),
   district: z.string().min(2, {
     message: "Please enter your district.",
   }),
+  avatar: z
+    .any()
+    .refine((files) => files?.length == 0 || files?.[0]?.size <= MAX_FILE_SIZE, 'Max file size is 5MB.')
+    .refine(
+      (files) => files?.length == 0 || ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+      'Only .jpg, .jpeg, .png and .webp formats are supported.'
+    )
+    .optional()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
-})
+}).refine((data) => {
+  if (data.role === "public_user") {
+    return !!data.citizenshipNumber;
+  } else {
+    return !!data.employeeId;
+  }
+}, {
+  message: "Required field based on role",
+  path: ["employeeId", "citizenshipNumber"],
+});
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -50,6 +69,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1)
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,10 +82,39 @@ export default function RegisterPage() {
       organization: "",
       phone: "",
       employeeId: "",
-      department: "",
+      citizenshipNumber: "",
       district: "",
     },
   })
+
+  const selectedRole = form.watch("role")
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "Error",
+          description: "Image size should be less than 5MB",
+          variant: "destructive",
+        })
+        return
+      }
+      if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+        toast({
+          title: "Error",
+          description: "Only .jpg, .jpeg, .png and .webp formats are supported",
+          variant: "destructive",
+        })
+        return
+      }
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -154,7 +203,7 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
                   name="role"
@@ -231,19 +280,35 @@ export default function RegisterPage() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="employeeId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Employee ID (if applicable)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Employee ID" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {selectedRole !== "public_user" ? (
+                    <FormField
+                      control={form.control}
+                      name="employeeId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Employee ID</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Employee ID" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="citizenshipNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Citizenship Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Citizenship Number" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -305,6 +370,39 @@ export default function RegisterPage() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="avatar"
+                  render={({ field: { value, onChange, ...field } }) => (
+                    <FormItem>
+                      <FormLabel>Profile Picture</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-4">
+                          {avatarPreview && (
+                            <Avatar className="h-20 w-20">
+                              <AvatarImage src={avatarPreview} alt="Preview" />
+                              <AvatarFallback>Preview</AvatarFallback>
+                            </Avatar>
+                          )}
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              handleAvatarChange(e)
+                              onChange(e.target.files)
+                            }}
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Upload a profile picture (max 5MB, .jpg, .png, or .webp)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Submit Registration"}

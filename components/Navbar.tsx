@@ -1,8 +1,8 @@
-"use client"
+'use client';
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import { 
   AlertCircle, 
@@ -35,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const navItems = [
   { href: "/", label: "Home", icon: <Home className="h-5 w-5" /> },
@@ -52,9 +53,22 @@ const themes = [
 
 export default function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false) // This would come from auth context in real app
   const { theme, setTheme } = useTheme()
+
+  // Mock user data - In real app, this would come from auth context
+  const user = {
+    name: "Rajesh Kumar",
+    role: "District Officer",
+    avatar: "/avatar.jpg"
+  }
+  
+  const handleNavigation = (href: string) => {
+    router.push(href)
+    setIsMenuOpen(false)
+  }
   
   return (
     <>
@@ -76,7 +90,10 @@ export default function Navbar() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-[72px] w-full rounded-none">
               {isLoggedIn ? (
-                <div className="h-8 w-8 rounded-full bg-primary" />
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                </Avatar>
               ) : (
                 <Lock className="h-5 w-5" />
               )}
@@ -85,6 +102,16 @@ export default function Navbar() {
           <DropdownMenuContent align="start" side="right" className="w-64">
             {isLoggedIn ? (
               <>
+                <div className="flex items-center gap-2 p-2 border-b">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{user.name}</span>
+                    <span className="text-xs text-muted-foreground">{user.role}</span>
+                  </div>
+                </div>
                 <Link href="/profile">
                   <DropdownMenuItem>
                     <User className="mr-2 h-4 w-4" />
@@ -160,17 +187,17 @@ export default function Navbar() {
               </div>
               <nav className="space-y-2">
                 {navItems.map((item) => (
-                  <Link
+                  <button
                     key={item.href}
-                    href={item.href}
+                    onClick={() => handleNavigation(item.href)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent",
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent",
                       pathname === item.href && "bg-accent"
                     )}
                   >
                     {item.icon}
                     {item.label}
-                  </Link>
+                  </button>
                 ))}
               </nav>
             </div>
@@ -182,7 +209,7 @@ export default function Navbar() {
       <header className="lg:hidden sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center gap-4">
           {/* Menu Button */}
-          <Sheet>
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
@@ -203,17 +230,17 @@ export default function Navbar() {
                 </div>
                 <nav className="space-y-2">
                   {navItems.map((item) => (
-                    <Link
+                    <button
                       key={item.href}
-                      href={item.href}
+                      onClick={() => handleNavigation(item.href)}
                       className={cn(
-                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent",
+                        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent",
                         pathname === item.href && "bg-accent"
                       )}
                     >
                       {item.icon}
                       {item.label}
-                    </Link>
+                    </button>
                   ))}
                 </nav>
               </div>
@@ -254,7 +281,10 @@ export default function Navbar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   {isLoggedIn ? (
-                    <div className="h-8 w-8 rounded-full bg-primary" />
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                    </Avatar>
                   ) : (
                     <Lock className="h-5 w-5" />
                   )}
@@ -263,6 +293,16 @@ export default function Navbar() {
               <DropdownMenuContent align="end" className="w-64">
                 {isLoggedIn ? (
                   <>
+                    <div className="flex items-center gap-2 p-2 border-b">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">{user.role}</span>
+                      </div>
+                    </div>
                     <Link href="/profile">
                       <DropdownMenuItem>
                         <User className="mr-2 h-4 w-4" />
