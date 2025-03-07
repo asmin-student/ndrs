@@ -2,6 +2,7 @@
 
 ## Full Project Structure
 
+```Bash
 DisasterManagementApp
 ├── Server
 │ ├── .env
@@ -111,7 +112,7 @@ DisasterManagementApp
 │ └── DisasterQueryService.js # Service to fetch disaster and resource data from backend
 └── types
 └── disasterTypes.js # Types for disaster-related data (e.g., Incident, Resource)
-
+```
 
 ---
 
