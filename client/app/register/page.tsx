@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { register as registerUser } from "@/lib/api"
 
 const MAX_FILE_SIZE = 5000000; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -36,8 +37,6 @@ const formSchema = z.object({
   phone: z.string().min(10, {
     message: "Please enter a valid phone number.",
   }),
-  employeeId: z.string().optional(),
-  citizenshipNumber: z.string().optional(),
   district: z.string().min(2, {
     message: "Please enter your district.",
   }),
@@ -52,15 +51,6 @@ const formSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
-}).refine((data) => {
-  if (data.role === "public_user") {
-    return !!data.citizenshipNumber;
-  } else {
-    return !!data.employeeId;
-  }
-}, {
-  message: "Required field based on role",
-  path: ["employeeId", "citizenshipNumber"],
 });
 
 export default function RegisterPage() {
@@ -81,13 +71,9 @@ export default function RegisterPage() {
       role: "",
       organization: "",
       phone: "",
-      employeeId: "",
-      citizenshipNumber: "",
       district: "",
     },
   })
-
-  const selectedRole = form.watch("role")
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -116,21 +102,33 @@ export default function RegisterPage() {
     }
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
-      setIsLoading(false)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setIsLoading(true)
+      
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, avatar, ...registrationData } = values
+      
+      const response = await registerUser(registrationData)
+      
+      // Store the token
+      localStorage.setItem('token', response.data.token)
       
       toast({
         title: "Account created successfully",
-        description: "Your registration request has been submitted and will be reviewed by the admin.",
+        description: "Welcome to Nepal Disaster Response System.",
       })
       
       router.push("/login")
-    }, 1500)
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.response?.data?.message || "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -280,38 +278,6 @@ export default function RegisterPage() {
                     )}
                   />
 
-                  {selectedRole !== "public_user" ? (
-                    <FormField
-                      control={form.control}
-                      name="employeeId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Employee ID</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Employee ID" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ) : (
-                    <FormField
-                      control={form.control}
-                      name="citizenshipNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Citizenship Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Citizenship Number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="district"
@@ -325,21 +291,21 @@ export default function RegisterPage() {
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Your phone number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your phone number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
