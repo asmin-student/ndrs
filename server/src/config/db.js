@@ -1,6 +1,7 @@
 const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
+// Create a new Pool instance
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -9,21 +10,21 @@ const pool = new Pool({
   port: process.env.DB_PORT,
 });
 
+// Test the connection
+pool.connect((err, client, release) => {
+  if (err) {
+    logger.error('Error acquiring client', err.stack);
+  } else {
+    logger.info('Database connected successfully');
+    release();
+  }
+});
+
 // Database initialization function
 const initializeDatabase = async () => {
   const client = await pool.connect();
   
   try {
-    // Create database if it doesn't exist
-    await client.query(`
-      DO $$ 
-      BEGIN
-        IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${process.env.DB_NAME}') THEN
-          CREATE DATABASE ${process.env.DB_NAME};
-        END IF;
-      END $$;
-    `);
-
     // Create users table
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -91,36 +92,6 @@ const initializeDatabase = async () => {
       );
     `);
 
-    // Create alerts table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS alerts (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        title VARCHAR(255) NOT NULL,
-        type VARCHAR(50) NOT NULL,
-        severity VARCHAR(50) NOT NULL,
-        location VARCHAR(255) NOT NULL,
-        description TEXT,
-        status VARCHAR(50) DEFAULT 'active',
-        issued_by UUID REFERENCES users(id),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
-    // Create resource_allocations table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS resource_allocations (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        resource_id UUID REFERENCES resources(id),
-        response_id UUID REFERENCES responses(id),
-        quantity INTEGER NOT NULL,
-        status VARCHAR(50) DEFAULT 'allocated',
-        allocated_by UUID REFERENCES users(id),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
-
     logger.info('Database initialized successfully');
   } catch (error) {
     logger.error('Error initializing database:', error);
@@ -131,6 +102,7 @@ const initializeDatabase = async () => {
 };
 
 module.exports = {
+  query: (text, params) => pool.query(text, params),
   pool,
   initializeDatabase
 };

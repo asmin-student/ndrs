@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+const db = require('../config/db');
 const { AppError } = require('../utils/errorHandler');
 
 class User {
@@ -12,7 +12,7 @@ class User {
     const values = [name, email, password, role, organization, phone, district];
     
     try {
-      const { rows } = await pool.query(query, values);
+      const { rows } = await db.query(query, values);
       return rows[0];
     } catch (error) {
       if (error.code === '23505') { // Unique violation
@@ -24,13 +24,13 @@ class User {
 
   static async findByEmail(email) {
     const query = 'SELECT * FROM users WHERE email = $1';
-    const { rows } = await pool.query(query, [email]);
+    const { rows } = await db.query(query, [email]);
     return rows[0];
   }
 
   static async findById(id) {
     const query = 'SELECT id, name, email, role, organization, phone, district, created_at FROM users WHERE id = $1';
-    const { rows } = await pool.query(query, [id]);
+    const { rows } = await db.query(query, [id]);
     return rows[0];
   }
 
@@ -38,7 +38,7 @@ class User {
     const allowedUpdates = ['name', 'organization', 'phone', 'district'];
     const updates = Object.entries(updateData)
       .filter(([key]) => allowedUpdates.includes(key))
-      .map(([key, value]) => `${key} = '${value}'`);
+      .map(([key, value], index) => `${key} = $${index + 2}`);
     
     if (updates.length === 0) return null;
 
@@ -49,7 +49,8 @@ class User {
       RETURNING id, name, email, role, organization, phone, district;
     `;
     
-    const { rows } = await pool.query(query, [id]);
+    const values = [id, ...Object.values(updateData)];
+    const { rows } = await db.query(query, [id]);
     return rows[0];
   }
 }
