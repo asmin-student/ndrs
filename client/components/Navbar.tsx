@@ -4,15 +4,16 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { 
-  AlertCircle, 
-  Home, 
-  Map, 
-  Package, 
-  Shield, 
+import {
+  ArrowUp,
+  AlertCircle,
+  Home,
+  Map,
+  Package,
+  Shield,
   Menu,
   X,
-  Search,
+  // Search,
   Lock,
   User,
   Palette,
@@ -48,6 +49,7 @@ const navItems = [
 const themes = [
   { name: "Light", value: "light" },
   { name: "Dark", value: "dark" },
+  { name: "Gunmetal", value: "gunmetal" },
   { name: "System", value: "system" }
 ]
 
@@ -64,21 +66,20 @@ export default function Navbar() {
     role: "District Officer",
     avatar: "/avatar.jpg"
   }
-  
+
   const handleNavigation = (href: string) => {
     router.push(href)
     setIsMenuOpen(false)
   }
-  
+
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-[72px] border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
+      <aside className="hidden lg:flex flex-col w-16 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
         {/* Logo */}
-        <Link 
+        <Link
           href="/"
           className={cn(
-            "flex h-[72px] items-center justify-center hover:bg-accent transition-colors",
+            "flex h-16 items-center justify-center hover:bg-accent transition-colors",
             pathname === "/" && "pointer-events-none"
           )}
         >
@@ -159,6 +160,7 @@ export default function Navbar() {
                   theme === t.value && "bg-accent"
                 )}
               >
+                <div className="h-4 w-4 rounded-full" style={{ backgroundColor: t.value === 'light' ? '#fff' : t.value === 'dark' ? '#3a3939' : t.value === 'gunmetal' ? '#1a202f' : '#0a0a0a' }} />
                 {t.name}
               </DropdownMenuItem>
             ))}
@@ -182,7 +184,7 @@ export default function Navbar() {
                   type="search"
                   placeholder="Search..."
                   className="h-9"
-                  prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+                  // prefix={<Search className="h-4 w-4 text-muted-foreground" />}
                 />
               </div>
               <nav className="space-y-2">
@@ -203,6 +205,14 @@ export default function Navbar() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {/* Scroll-to-Top Button */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="mt-auto flex h-16 items-center justify-center hover:bg-accent transition-colors"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
       </aside>
 
       {/* Mobile Header */}
@@ -225,7 +235,7 @@ export default function Navbar() {
                     type="search"
                     placeholder="Search..."
                     className="h-9"
-                    prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+                    // prefix={<Search className="h-4 w-4 text-muted-foreground" />}
                   />
                 </div>
                 <nav className="space-y-2">
@@ -269,7 +279,8 @@ export default function Navbar() {
                       "flex items-center gap-2",
                       theme === t.value && "bg-accent"
                     )}
-                  >
+                    >
+                    <div className="h-4 w-4 rounded-full" style={{ backgroundColor: t.value === 'light' ? '#fff' : t.value === 'dark' ? '#3a3939' : t.value === 'gunmetal' ? '#1a202f' : '#0a0a0a' }} />
                     {t.name}
                   </DropdownMenuItem>
                 ))}
