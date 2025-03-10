@@ -26,10 +26,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Div A: Outer container */}
-          <div className="min-h-screen bg-background/90 p-4 md:p-6 lg:p-8">
-            {/* Div B: Inner container */}
-            <div className="relative min-h-[calc(100vh-4rem)] bg-background rounded-xl shadow-lg flex flex-col lg:flex-row">
+          {/* Outer container: no padding on small screens */}
+          <div className="min-h-screen bg-background/90 p-0 md:p-6 lg:p-8">
+            {/* Inner container: full 100vh for small screens, calc(100vh-4rem) for large */}
+            <div className="relative min-h-screen lg:min-h-[calc(100vh-4rem)] bg-background rounded-xl shadow-lg flex flex-col lg:flex-row">
               <Navbar />
               <main className="flex-1 overflow-hidden relative">
                 <div className="container h-full py-6 px-4 md:px-6">

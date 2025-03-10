@@ -14,7 +14,6 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
         light: "light",
         dark: "dark",
         gunmetal: "gunmetal",
-        vampire: "vampire"
       }}
       {...props}
     >
