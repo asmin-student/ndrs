@@ -3,7 +3,12 @@ import { AlertCircle, ArrowRight, Map, Package, Shield } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
-export default function Home() {
+export default async function Home() {
+  // Get the session and check if user is logged in
+  // const session = await auth()
+  // const isLoggedIn = !!session
+  const isLoggedIn = false;
+
   return (
     <div className="container mx-auto py-8 px-4">
       {/* Hero Section */}
@@ -123,16 +128,33 @@ export default function Home() {
       {/* Call to Action */}
       <section className="py-12 text-center">
         <div className="mx-auto max-w-3xl space-y-4">
-          <h2 className="text-3xl font-bold">Join the Disaster Response Network</h2>
-          <p className="text-muted-foreground">
-            Be part of Nepal's coordinated disaster response effort. Register as a volunteer, resource provider, or emergency responder.
-          </p>
-          <Button size="lg" asChild>
-            <Link href="/signup">
-              Register Now
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          {isLoggedIn ? (
+            <>
+              <h2 className="text-3xl font-bold">Disaster Response Network Member</h2>
+              <p className="text-muted-foreground">
+                Thank you for being part of Nepal's disaster response network. Access your dashboard to manage your contributions and activities.
+              </p>
+              <Button size="lg" asChild>
+                <Link href="/profile">
+                  Go to Profile
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <h2 className="text-3xl font-bold">Join the Disaster Response Network</h2>
+              <p className="text-muted-foreground">
+                Be part of Nepal's coordinated disaster response effort. Register as a volunteer, resource provider, or emergency responder.
+              </p>
+              <Button size="lg" asChild>
+                <Link href="/signup">
+                  Register Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
         </div>
       </section>
     </div>
