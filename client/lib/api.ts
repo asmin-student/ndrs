@@ -9,31 +9,14 @@ const api = axios.create({
   },
 });
 
-export const register = async (userData: {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-  organization?: string;
-  phone?: string;
-  district: string;
-}) => {
+export const register = async (userData: any) => {
   const response = await api.post('/auth/register', userData);
   return response.data;
 };
 
-export const login = async (credentials: { email: string; password: string }) => {
+export const login = async (credentials: any) => {
   const response = await api.post('/auth/login', credentials);
   return response.data;
 };
-
-// Add auth token to requests if it exists
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
 
 export default api;

@@ -10,11 +10,21 @@ const Joi = require('joi');
 const registerSchema = Joi.object({
   name: Joi.string().required().min(2),
   email: Joi.string().required().email(),
-  password: Joi.string().required().min(6),
-  role: Joi.string().valid('admin', 'district_officer', 'emergency_responder', 'resource_manager', 'field_officer', 'volunteer', 'ngo_representative', 'public_user'),
-  organization: Joi.string().allow(''),
-  phone: Joi.string().allow(''),
-  district: Joi.string().required()
+  password: Joi.string().required().min(8),
+  role: Joi.string().valid(
+    'admin', 
+    'district_officer',
+    'emergency_responder', 
+    'resource_manager',
+    'field_officer',
+    'volunteer',
+    'ngo_representative',
+    'public_user'
+  ).default('public_user'),
+  organization: Joi.string().allow('', null).optional(),
+  district: Joi.string().required(),
+  phone: Joi.string().required().min(10),
+  profile_picture: Joi.string().allow('', null).optional(),
 });
 
 const loginSchema = Joi.object({
@@ -24,9 +34,27 @@ const loginSchema = Joi.object({
 
 router.post('/register', validate(registerSchema), async (req, res, next) => {
   try {
-    const { name, email, password, role, organization, phone, district } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      role, 
+      organization, 
+      phone, 
+      district,
+      profile_picture 
+    } = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findByEmail(email);
+    if (existingUser) {
+      throw new AppError('Email already exists', 400);
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     const user = await User.create({
       name,
       email,
@@ -34,9 +62,11 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
       role,
       organization,
       phone,
-      district
+      district,
+      profile_picture
     });
 
+    // Generate token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
@@ -46,7 +76,16 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     res.status(201).json({
       status: 'success',
       data: {
-        user,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          organization: user.organization,
+          district: user.district,
+          phone: user.phone,
+          created_at: user.created_at
+        },
         token
       }
     });

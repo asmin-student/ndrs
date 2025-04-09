@@ -32,6 +32,17 @@ const formSchema = z.object({
   confirmPassword: z.string(),
   role: z.string({
     required_error: "Please select a role.",
+  }).refine(value => [
+    'admin', 
+    'district_officer',
+    'emergency_responder', 
+    'resource_manager',
+    'field_officer',
+    'volunteer',
+    'ngo_representative',
+    'public_user'
+  ].includes(value), {
+    message: "Please select a valid role"
   }),
   organization: z.string().optional(),
   phone: z.string().min(10, {
@@ -106,21 +117,48 @@ export default function RegisterPage() {
     try {
       setIsLoading(true)
       
-      // Remove confirmPassword before sending to API
+      // Remove confirmPassword and prepare avatar before sending to API
       const { confirmPassword, avatar, ...registrationData } = values
       
-      const response = await registerUser(registrationData)
+      // Convert avatar to base64 if exists
+      let profilePicture = null
+      if (avatar?.[0]) {
+        const reader = new FileReader()
+        profilePicture = await new Promise<string>((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string)
+          reader.readAsDataURL(avatar[0])
+        })
+      }
+
+      // Prepare data according to database schema
+      const userData = {
+        ...registrationData,
+        profile_picture: profilePicture,
+        role: registrationData.role || 'public_user',
+        organization: registrationData.organization || null,
+        phone: registrationData.phone,
+        district: registrationData.district,
+        name: registrationData.name,
+        email: registrationData.email,
+        password: registrationData.password
+      }
       
-      // Store the token
-      localStorage.setItem('token', response.data.token)
+      const response = await registerUser(userData)
       
-      toast({
-        title: "Account created successfully",
-        description: "Welcome to Nepal Disaster Response System.",
-      })
-      
-      router.push("/login")
+      if (response.data?.token) {
+        localStorage.setItem('token', response.data.token)
+        
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to Nepal Disaster Response System.",
+        })
+        
+        router.push("/login")
+      } else {
+        throw new Error("Registration successful but no token received")
+      }
     } catch (error: any) {
+      console.error('Registration Error:', error.response?.data || error)
       toast({
         title: "Registration failed",
         description: error.response?.data?.message || "Something went wrong",
