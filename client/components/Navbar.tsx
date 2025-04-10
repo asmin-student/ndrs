@@ -121,7 +121,7 @@ export default function Navbar() {
                   <X className="h-5 w-5" /> // Show X when dropdown is open
                 ) : isLoggedIn ? (
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                    {/* <AvatarImage src={user?.profile_picture} alt={user?.name} /> */}
                     <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                   </Avatar>
                 ) : (
@@ -134,7 +134,7 @@ export default function Navbar() {
                 <>
                   <div className="flex items-center gap-2 p-2 border-b">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                      {/* <AvatarImage src={user?.profile_picture} alt={user?.name} /> */}
                       <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
@@ -258,19 +258,19 @@ export default function Navbar() {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="fixed w-full sm:w-96" container={mainRef.current}>
+              <SheetContent side="left" className="fixed w-full sm:w-96 p-5" container={mainRef.current}>
                 <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
+                  <SheetTitle className="my-[-5px]">Menu</SheetTitle>
                 </SheetHeader>
                 <div className="py-6">
-                  <div className="mb-4">
+                  {/* <div className="mb-4">
                     <Input
                       type="search"
                       placeholder="Search..."
                       className="h-9"
-                      // prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+                      prefix={<Search className="h-4 w-4 text-muted-foreground" />}
                     />
-                  </div>
+                  </div> */}
                   <nav className="space-y-2">
                     {navItems.map((item) => (
                       <button
@@ -326,7 +326,7 @@ export default function Navbar() {
                   <Button variant="ghost" size="icon">
                     {isLoggedIn ? (
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                        {/* <AvatarImage src={user?.profile_picture} alt={user?.name} /> */}
                         <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                       </Avatar>
                     ) : (
@@ -339,7 +339,7 @@ export default function Navbar() {
                     <>
                       <div className="flex items-center gap-2 p-2 border-b">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                          {/* <AvatarImage src={user?.profile_picture} alt={user?.name} /> */}
                           <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
