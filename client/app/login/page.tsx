@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
+import { useAuth } from "@/contexts/auth-context"
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -38,6 +39,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [showOTPInput, setShowOTPInput] = useState(false)
+  const { login: authLogin } = useAuth()
   
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -55,21 +57,27 @@ export default function LoginPage() {
     },
   })
 
-  function onLoginSubmit(values: z.infer<typeof loginSchema>) {
-    setIsLoading(true)
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log(values)
-      setIsLoading(false)
+  async function onLoginSubmit(values: z.infer<typeof loginSchema>) {
+    try {
+      setIsLoading(true)
+      await authLogin(values.email, values.password)
       
       toast({
-        title: "Login successful",
-        description: "Welcome back to Nepal Disaster Response System.",
+        title: "Success",
+        description: "Logged in successfully",
       })
       
       router.push("/")
-    }, 1500)
+    } catch (error: any) {
+      console.error('Login error:', error)
+      toast({
+        title: "Login failed",
+        description: error.response?.data?.message || "Invalid email or password",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   function onForgotPasswordSubmit(values: z.infer<typeof forgotPasswordSchema>) {
@@ -180,7 +188,7 @@ export default function LoginPage() {
                             render={({ slots }) => (
                               <InputOTPGroup className="gap-2">
                                 {slots.map((slot, index) => (
-                                  <InputOTPSlot key={index} {...slot} />
+                                  <InputOTPSlot key={index} index={index} {...slot} />
                                 ))}
                               </InputOTPGroup>
                             )}

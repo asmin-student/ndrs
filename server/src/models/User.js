@@ -3,15 +3,15 @@ const { AppError } = require('../utils/errorHandler');
 
 class User {
   static async create(userData) {
-    const { 
-      name, 
-      email, 
-      password, 
-      role, 
-      organization, 
-      phone, 
+    const {
+      name,
+      email,
+      password,
+      role,
+      organization,
+      phone,
       district,
-      profile_picture 
+      profile_picture
     } = userData;
 
     const query = `
@@ -38,16 +38,16 @@ class User {
     `;
 
     const values = [
-      name, 
-      email, 
-      password, 
-      role, 
-      organization || null, 
+      name,
+      email,
+      password,
+      role,
+      organization || null,
       phone,
       district,
       profile_picture ? Buffer.from(profile_picture.split(',')[1], 'base64') : null
     ];
-    
+
     try {
       const { rows } = await pool.query(query, values);
       return rows[0];
@@ -66,17 +66,42 @@ class User {
   }
 
   static async findById(id) {
-    const query = 'SELECT id, name, email, role, organization, phone, district, created_at FROM users WHERE id = $1';
-    const { rows } = await pool.query(query, [id]);
-    return rows[0];
+    const query = `
+      SELECT id, name, email, role, organization, phone, district, profile_picture, created_at
+      FROM users 
+      WHERE id = $1
+    `;
+
+    try {
+      const { rows } = await pool.query(query, [id]);
+      if (rows.length === 0) return null;
+
+      const user = rows[0];
+
+      // Convert Buffer back to base64 string if exists
+      if (user.profile_picture) {
+        user.profile_picture = `data:image/jpeg;base64,${user.profile_picture.toString('base64')}`;
+      }
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
   }
 
   static async update(id, updateData) {
     const allowedUpdates = ['name', 'organization', 'phone', 'district'];
-    const updates = Object.entries(updateData)
-      .filter(([key]) => allowedUpdates.includes(key))
-      .map(([key, value], index) => `${key} = $${index + 2}`);
-    
+    const updates = [];
+    const values = [id]; // Start with ID as first parameter ($1)
+
+    // Filter and collect allowed fields
+    Object.entries(updateData).forEach(([key, value]) => {
+      if (allowedUpdates.includes(key)) {
+        updates.push(`${key} = $${values.length + 1}`); // Dynamic parameter index
+        values.push(value);
+      }
+    });
+
     if (updates.length === 0) return null;
 
     const query = `
@@ -85,8 +110,7 @@ class User {
       WHERE id = $1 
       RETURNING id, name, email, role, organization, phone, district;
     `;
-    
-    const values = [id, ...Object.values(updateData)];
+
     const { rows } = await pool.query(query, values);
     return rows[0];
   }

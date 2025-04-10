@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/contexts/auth-context";
 import {
   ArrowUp,
   AlertCircle,
@@ -56,19 +57,17 @@ const themes = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isLoggedIn, logout } = useAuth();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // This would come from auth context in real app
   const { theme, setTheme } = useTheme();
   const [isMobile, setIsMobile] = useState(false);
   const mainRef = useRef<HTMLElement | null>(null);
 
-  // Mock user data - In real app, this would come from auth context
-  const user = {
-    name: "Rajesh Kumar",
-    role: "District Officer",
-    avatar: "/avatar.jpg",
+  const handleLogout = () => {
+    logout();
+    setIsAccountOpen(false);
   };
 
   // Effect to handle window resize and determine if the screen is mobile
@@ -122,8 +121,8 @@ export default function Navbar() {
                   <X className="h-5 w-5" /> // Show X when dropdown is open
                 ) : isLoggedIn ? (
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                    <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                    <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                   </Avatar>
                 ) : (
                   <Lock className="h-5 w-5" />
@@ -135,12 +134,12 @@ export default function Navbar() {
                 <>
                   <div className="flex items-center gap-2 p-2 border-b">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                      <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                      <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">{user.name}</span>
-                      <span className="text-xs text-muted-foreground">{user.role}</span>
+                      <span className="text-sm font-medium">{user?.name}</span>
+                      <span className="text-xs text-muted-foreground">{user?.role}</span>
                     </div>
                   </div>
                   <Link href="/profile">
@@ -149,10 +148,10 @@ export default function Navbar() {
                       Profile
                     </DropdownMenuItem>
                   </Link>
-                  <DropdownMenuItem className="cursor-pointer" onClick={() => setIsLoggedIn(false)}>
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
                 </>
               ) : (
                 <>
@@ -206,18 +205,18 @@ export default function Navbar() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-80" container={mainRef.current}>
-                <SheetHeader className="fixed top-8">
+                <SheetHeader className="fixed top-11">
                   <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
-                <div className="py-6 fixed top-15">
-                  <div className="mb-4">
+                <div className="py-6 fixed top-16">
+                  {/* <div className="mb-4">
                     <Input
                       type="search"
                       placeholder="Search..."
                       className="h-9"
-                      // prefix={<Search className="h-4 w-4 text-muted-foreground" />}
+                      prefix={<Search className="h-4 w-4 text-muted-foreground" />}
                     />
-                  </div>
+                  </div> */}
                   <nav className="space-y-2">
                     {navItems.map((item) => (
                       <button
@@ -327,8 +326,8 @@ export default function Navbar() {
                   <Button variant="ghost" size="icon">
                     {isLoggedIn ? (
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                        <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                        <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                       </Avatar>
                     ) : (
                       <Lock className="h-5 w-5" />
@@ -340,12 +339,12 @@ export default function Navbar() {
                     <>
                       <div className="flex items-center gap-2 p-2 border-b">
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback>{user.name.split(" ").map(n => n[0]).join("")}</AvatarFallback>
+                          <AvatarImage src={user?.profile_picture} alt={user?.name} />
+                          <AvatarFallback>{user?.name?.split(" ").map(n => n[0]).join("")}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium">{user.name}</span>
-                          <span className="text-xs text-muted-foreground">{user.role}</span>
+                          <span className="text-sm font-medium">{user?.name}</span>
+                          <span className="text-xs text-muted-foreground">{user?.role}</span>
                         </div>
                       </div>
                       <Link href="/profile">
@@ -354,7 +353,7 @@ export default function Navbar() {
                           Profile
                         </DropdownMenuItem>
                       </Link>
-                      <DropdownMenuItem onClick={() => setIsLoggedIn(false)}>
+                      <DropdownMenuItem onClick={handleLogout}>
                         <LogIn className="mr-2 h-4 w-4" />
                         Logout
                       </DropdownMenuItem>

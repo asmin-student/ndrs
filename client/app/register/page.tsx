@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { register as registerUser } from "@/lib/api"
+import { register } from "@/lib/api"
 
 const MAX_FILE_SIZE = 5000000; // 5MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -142,20 +142,18 @@ export default function RegisterPage() {
         email: registrationData.email,
         password: registrationData.password
       }
+
+      const response = await register(userData)
       
-      const response = await registerUser(userData)
-      
-      if (response.data?.token) {
-        localStorage.setItem('token', response.data.token)
-        
+      if (response.status === 'success') {
         toast({
           title: "Account created successfully",
-          description: "Welcome to Nepal Disaster Response System.",
+          description: "You can now login with your credentials.",
         })
         
         router.push("/login")
       } else {
-        throw new Error("Registration successful but no token received")
+        throw new Error("Registration failed")
       }
     } catch (error: any) {
       console.error('Registration Error:', error.response?.data || error)

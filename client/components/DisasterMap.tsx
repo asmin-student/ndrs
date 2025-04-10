@@ -83,7 +83,7 @@ const disasters = [
 ]
 
 // Map center for Nepal
-const NEPAL_CENTER = [28.3949, 84.1240]
+const NEPAL_CENTER: [number, number] = [28.3949, 84.1240]
 const DEFAULT_ZOOM = 7
 
 // Component to handle map view changes
